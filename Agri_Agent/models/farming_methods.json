@@ -1,0 +1,738 @@
+{
+    "farming_methods": {
+
+       "traditional_methods": {
+        "oasis_farming": {
+          "regions": ["North Africa", "Middle East", "Central Asia"],
+          "characteristics": {
+            "description": "Multi-layered farming system around water sources in desert regions",
+            "crop_types": ["Date palms", "Fruit trees", "Vegetables", "Cereals"],
+            "labor_intensity": "High",
+            "mechanization_level": "Low to Moderate",
+            "sustainability_score": 8,
+            "water_dependency": "High"
+          },
+          "advantages": [
+            "Efficient water use",
+            "Microclimate creation",
+            "Multi-layer production",
+            "Desert land utilization"
+          ],
+          "disadvantages": [
+            "Limited by water availability",
+            "Salt accumulation risks",
+            "Limited expansion potential"
+          ],
+          "typical_farm_size": "0.5-5 hectares"
+        },
+        "floating_gardens": {
+          "regions": ["Bangladesh", "Myanmar", "Thailand"],
+          "characteristics": {
+            "description": "Cultivation on floating beds made of water hyacinth and other aquatic plants",
+            "crop_types": ["Vegetables", "Spices", "Rice seedlings"],
+            "labor_intensity": "High",
+            "mechanization_level": "Very Low",
+            "sustainability_score": 9,
+            "water_dependency": "High but efficient"
+          },
+          "advantages": [
+            "Flood resistant",
+            "Natural fertilization",
+            "Year-round production",
+            "Water conservation"
+          ],
+          "disadvantages": [
+            "Limited scale",
+            "Labor intensive",
+            "Requires specific conditions"
+          ],
+          "typical_farm_size": "0.1-0.3 hectares"
+        }
+      },
+      "slash_and_burn": {
+        "regions": ["Southeast Asia", "Amazon Basin", "Central Africa"],
+        "characteristics": {
+          "description": "Clearing land by cutting and burning vegetation",
+          "crop_types": ["Rice", "Cassava", "Maize", "Various vegetables"],
+          "labor_intensity": "High",
+          "mechanization_level": "Low",
+          "sustainability_score": 3,
+          "water_dependency": "Rainfall dependent"
+        },
+        "advantages": [
+          "Low initial investment",
+          "Temporarily fertile soil",
+          "Suitable for remote areas"
+        ],
+        "disadvantages": [
+          "Environmental degradation",
+          "Soil erosion",
+          "Limited sustainability"
+        ],
+        "typical_farm_size": "1-5 hectares"
+      },
+      "terrace_farming": {
+        "regions": ["Andes Mountains", "Philippines", "Nepal", "China"],
+        "characteristics": {
+          "description": "Creating level platforms on hillsides for cultivation",
+          "crop_types": ["Rice", "Potatoes", "Wheat", "Vegetables"],
+          "labor_intensity": "Very High",
+          "mechanization_level": "Low",
+          "sustainability_score": 8,
+          "water_dependency": "Moderate"
+        },
+        "advantages": [
+          "Prevents soil erosion",
+          "Maximizes hillside space",
+          "Water conservation"
+        ],
+        "disadvantages": [
+          "High construction cost",
+          "Labor intensive",
+          "Limited to hilly regions"
+        ],
+        "typical_farm_size": "0.5-2 hectares"
+      },
+      "rice_paddy": {
+        "regions": ["East Asia", "Southeast Asia", "South Asia"],
+        "characteristics": {
+          "description": "Flooded parcels of arable land for rice cultivation",
+          "crop_types": ["Rice", "Fish (in some systems)"],
+          "labor_intensity": "High",
+          "mechanization_level": "Variable",
+          "sustainability_score": 7,
+          "water_dependency": "High"
+        },
+        "advantages": [
+          "High yield per acre",
+          "Weed control through flooding",
+          "Potential for fish integration"
+        ],
+        "disadvantages": [
+          "High water consumption",
+          "Methane emissions",
+          "Labor intensive"
+        ],
+        "typical_farm_size": "1-3 hectares"
+      },
+      "pastoral_nomadism": {
+        "regions": ["Central Asia", "Middle East", "Africa"],
+        "characteristics": {
+          "description": "Mobile livestock-based farming system",
+          "livestock_types": ["Cattle", "Sheep", "Goats", "Camels"],
+          "labor_intensity": "Moderate",
+          "mechanization_level": "Low",
+          "sustainability_score": 6,
+          "water_dependency": "Variable"
+        },
+        "advantages": [
+          "Adaptable to harsh environments",
+          "Efficient use of marginal lands",
+          "Low fixed costs"
+        ],
+        "disadvantages": [
+          "Vulnerable to climate changes",
+          "Limited access to markets",
+          "Land use conflicts"
+        ],
+        "typical_herd_size": "50-500 animals"
+      },
+      "chinampas": {
+        "regions": ["Mexico", "Central America"],
+        "characteristics": {
+          "description": "Artificial islands in shallow lake beds",
+          "crop_types": ["Vegetables", "Flowers", "Maize"],
+          "labor_intensity": "High",
+          "mechanization_level": "Low",
+          "sustainability_score": 9,
+          "water_dependency": "High"
+        },
+        "advantages": [
+          "Highly productive",
+          "Natural irrigation",
+          "Soil fertility"
+        ],
+        "disadvantages": [
+          "Limited to specific geographies",
+          "Labor intensive",
+          "Requires water body access"
+        ],
+        "typical_farm_size": "0.1-0.5 hectares"
+      }
+    },
+    "modern_methods": {
+      "precision_agriculture": {
+        "regions": ["North America", "Europe", "Australia", "Advanced Asian economies"],
+        "characteristics": {
+          "description": "Using GPS, sensors, and data analytics for optimized farming",
+          "technologies_used": [
+            "GPS guidance",
+            "Variable rate technology",
+            "Yield monitors",
+            "Soil sensors"
+          ],
+          "mechanization_level": "Very High",
+          "sustainability_score": 9,
+          "water_dependency": "Low to Moderate"
+        },
+        "advantages": [
+          "Reduced input waste",
+          "Higher yields",
+          "Better resource management",
+          "Lower environmental impact"
+        ],
+        "disadvantages": [
+          "High initial cost",
+          "Technical expertise required",
+          "Regular maintenance needed"
+        ],
+        "typical_farm_size": "50+ hectares",
+        "average_investment": "$500-1000 per hectare"
+      },
+      "vertical_farming": {
+        "regions": ["Urban areas globally", "Singapore", "Japan", "Netherlands"],
+        "characteristics": {
+          "description": "Indoor farming in vertically stacked layers",
+          "technologies_used": [
+            "LED lighting",
+            "Hydroponics/Aeroponics",
+            "Climate control",
+            "IoT sensors"
+          ],
+          "mechanization_level": "Very High",
+          "sustainability_score": 8,
+          "water_dependency": "Very Low"
+        },
+        "advantages": [
+          "Year-round production",
+          "Weather independent",
+          "Water efficient",
+          "No pesticides needed"
+        ],
+        "disadvantages": [
+          "High energy costs",
+          "Limited crop variety",
+          "High startup costs"
+        ],
+        "typical_farm_size": "0.1-1 hectare",
+        "average_investment": "$2000-3000 per square meter"
+      },
+      "autonomous_farming": {
+        "regions": ["North America", "Europe", "Australia", "Japan"],
+        "characteristics": {
+          "description": "Fully automated farming using robots and AI",
+          "technologies_used": [
+            "Robotic harvesters",
+            "Autonomous tractors",
+            "Drone monitoring",
+            "AI decision systems"
+          ],
+          "mechanization_level": "Extremely High",
+          "sustainability_score": 8,
+          "water_dependency": "Low"
+        },
+        "advantages": [
+          "Reduced labor costs",
+          "24/7 operation possible",
+          "High precision",
+          "Data-driven decisions"
+        ],
+        "disadvantages": [
+          "Very high initial investment",
+          "Complex maintenance",
+          "Technical expertise needed"
+        ],
+        "typical_farm_size": "100+ hectares",
+        "average_investment": "$2000-5000 per hectare"
+      },
+      "controlled_environment_agriculture": {
+        "regions": ["Global", "Urban areas", "Harsh climates"],
+        "characteristics": {
+          "description": "Fully controlled indoor growing environments",
+          "technologies_used": [
+            "Environmental controls",
+            "Artificial lighting",
+            "Automated nutrient systems",
+            "CO2 enrichment"
+          ],
+          "mechanization_level": "Very High",
+          "sustainability_score": 7,
+          "water_dependency": "Very Low"
+        },
+        "advantages": [
+          "Climate independent",
+          "Year-round production",
+          "Disease control",
+          "Consistent quality"
+        ],
+        "disadvantages": [
+          "High energy costs",
+          "Large initial investment",
+          "Limited crop selection"
+        ],
+        "typical_farm_size": "0.5-2 hectares",
+        "average_investment": "$1500-4000 per square meter"
+      }
+    },
+    "integrated_systems": {
+      "agroforestry": {
+        "regions": ["Southeast Asia", "Central America", "Africa"],
+        "characteristics": {
+          "description": "Combining trees and shrubs with crops or livestock",
+          "components": [
+            "Tree crops",
+            "Food crops",
+            "Livestock (optional)"
+          ],
+          "mechanization_level": "Low to Moderate",
+          "sustainability_score": 9,
+          "water_dependency": "Moderate"
+        },
+        "advantages": [
+          "Biodiversity enhancement",
+          "Multiple income streams",
+          "Soil improvement",
+          "Climate resilience"
+        ],
+        "disadvantages": [
+          "Complex management",
+          "Slow initial returns",
+          "Competition for resources"
+        ],
+        "typical_farm_size": "2-20 hectares"
+      },
+      "permaculture": {
+        "regions": ["Global", "Australia", "North America", "Europe"],
+        "characteristics": {
+          "description": "Sustainable agriculture mimicking natural ecosystems",
+          "components": [
+            "Perennial crops",
+            "Food forests",
+            "Water management",
+            "Animal systems"
+          ],
+          "mechanization_level": "Low",
+          "sustainability_score": 10,
+          "water_dependency": "Low"
+        },
+        "advantages": [
+          "Self-sustaining system",
+          "Low input needs",
+          "High biodiversity",
+          "Resilient to climate change"
+        ],
+        "disadvantages": [
+          "Long establishment period",
+          "Knowledge intensive",
+          "Lower initial yields"
+        ],
+        "typical_farm_size": "1-10 hectares"
+      }
+    },
+    "biotechnology_based": {
+      "genetic_engineering": {
+        "regions": ["North America", "South America", "India", "China"],
+        "characteristics": {
+          "description": "Using genetic modification for crop improvement",
+          "technologies_used": [
+            "CRISPR gene editing",
+            "Transgenic breeding",
+            "Marker assisted selection"
+          ],
+          "mechanization_level": "High",
+          "sustainability_score": 7,
+          "water_dependency": "Variable"
+        },
+        "advantages": [
+          "Increased yields",
+          "Pest resistance",
+          "Drought tolerance",
+          "Enhanced nutrition"
+        ],
+        "disadvantages": [
+          "High development costs",
+          "Regulatory challenges",
+          "Public acceptance issues"
+        ],
+        "typical_application": "Large scale commercial farming",
+        "average_research_cost": "$100-150 million per trait"
+      },
+      "cellular_agriculture": {
+        "regions": ["Developed nations", "Research facilities"],
+        "characteristics": {
+          "description": "Lab-grown agricultural products",
+          "technologies_used": [
+            "Cell culture",
+            "Tissue engineering",
+            "Fermentation",
+            "Synthetic biology"
+          ],
+          "mechanization_level": "Very High",
+          "sustainability_score": 8,
+          "water_dependency": "Low"
+        },
+        "advantages": [
+          "Reduced environmental impact",
+          "Controlled production",
+          "No animal welfare issues",
+          "Lower resource use"
+        ],
+        "disadvantages": [
+          "Very high production costs",
+          "Limited scale currently",
+          "Consumer acceptance"
+        ],
+        "typical_facility_size": "500-5000 square meters",
+        "average_investment": "$10-50 million per facility"
+      }
+    },
+    "smart_farming": {
+      "iot_based_farming": {
+        "regions": ["Developed nations", "Advanced agricultural regions"],
+        "characteristics": {
+          "description": "Internet of Things integration in agriculture",
+          "technologies_used": [
+            "Sensor networks",
+            "Smart irrigation",
+            "Climate monitoring",
+            "Automated systems"
+          ],
+          "mechanization_level": "Very High",
+          "sustainability_score": 9,
+          "water_dependency": "Low"
+        },
+        "advantages": [
+          "Real-time monitoring",
+          "Predictive maintenance",
+          "Resource optimization",
+          "Remote management"
+        ],
+        "disadvantages": [
+          "Connectivity requirements",
+          "Technical complexity",
+          "Cybersecurity concerns"
+        ],
+        "typical_farm_size": "10+ hectares",
+        "average_investment": "$800-2000 per hectare"
+      },
+      "ai_powered_farming": {
+        "regions": ["North America", "Europe", "East Asia"],
+        "characteristics": {
+          "description": "Artificial Intelligence applications in agriculture",
+          "technologies_used": [
+            "Machine learning",
+            "Computer vision",
+            "Predictive analytics",
+            "Robot control"
+          ],
+          "mechanization_level": "Extremely High",
+          "sustainability_score": 8,
+          "water_dependency": "Low"
+        },
+        "advantages": [
+          "Optimized decision making",
+          "Early problem detection",
+          "Yield prediction",
+          "Resource efficiency"
+        ],
+        "disadvantages": [
+          "High implementation cost",
+          "Data quality dependency",
+          "Requires expertise"
+        ],
+        "typical_farm_size": "50+ hectares",
+        "average_investment": "$1500-3000 per hectare"
+      }
+    } ,
+        
+      "climate_smart_agriculture": {
+        "carbon_farming": {
+          "regions": ["Global", "Australia", "North America", "Europe"],
+          "characteristics": {
+            "description": "Agricultural methods focused on carbon sequestration and emissions reduction",
+            "practices": [
+              "Biochar application",
+              "Cover cropping",
+              "Reduced tillage",
+              "Soil carbon monitoring"
+            ],
+            "mechanization_level": "Moderate to High",
+            "sustainability_score": 10,
+            "carbon_sequestration_potential": "High"
+          },
+          "advantages": [
+            "Carbon credits potential",
+            "Improved soil health",
+            "Climate change mitigation",
+            "Additional income streams"
+          ],
+          "disadvantages": [
+            "Initial investment needed",
+            "Long-term commitment required",
+            "Complex measurement systems"
+          ],
+          "typical_farm_size": "20+ hectares",
+          "average_investment": "$200-500 per hectare"
+        },
+        "drought_resistant_agriculture": {
+          "regions": ["Arid regions", "Sub-Saharan Africa", "Mediterranean"],
+          "characteristics": {
+            "description": "Farming systems adapted to water-scarce conditions",
+            "technologies_used": [
+              "Drought-resistant crops",
+              "Water harvesting",
+              "Soil moisture conservation",
+              "Precision irrigation"
+            ],
+            "mechanization_level": "Variable",
+            "sustainability_score": 8,
+            "water_dependency": "Very Low"
+          },
+          "advantages": [
+            "Climate resilience",
+            "Low water requirement",
+            "Suitable for arid regions"
+          ],
+          "disadvantages": [
+            "Lower yields possible",
+            "Limited crop choice",
+            "Requires specific expertise"
+          ],
+          "typical_farm_size": "5-50 hectares"
+        }
+      },
+      "next_generation_systems": {
+        "space_farming": {
+          "regions": ["Research facilities", "Space stations", "Future colonies"],
+          "characteristics": {
+            "description": "Controlled environment agriculture for space applications",
+            "technologies_used": [
+              "LED lighting",
+              "Hydroponics",
+              "Atmospheric management",
+              "Radiation protection",
+              "Artificial gravity systems"
+            ],
+            "mechanization_level": "Extremely High",
+            "sustainability_score": 9,
+            "resource_efficiency": "Very High"
+          },
+          "advantages": [
+            "Closed-loop system",
+            "Maximum resource efficiency",
+            "Zero waste potential",
+            "Environment independent"
+          ],
+          "disadvantages": [
+            "Extremely high cost",
+            "Complex technology",
+            "Limited scale currently"
+          ],
+          "typical_facility_size": "10-100 square meters",
+          "average_investment": "$10,000+ per square meter"
+        },
+        "hybrid_energy_farming": {
+          "regions": ["Europe", "North America", "East Asia"],
+          "characteristics": {
+            "description": "Integration of renewable energy generation with agriculture",
+            "components": [
+              "Solar panels",
+              "Wind turbines",
+              "Energy storage",
+              "Crop production",
+              "Smart grid integration"
+            ],
+            "mechanization_level": "Very High",
+            "sustainability_score": 10,
+            "energy_generation": "5-20 MW per 100 hectares"
+          },
+          "advantages": [
+            "Dual income streams",
+            "Land use efficiency",
+            "Energy independence",
+            "Carbon negative potential"
+          ],
+          "disadvantages": [
+            "High initial investment",
+            "Complex regulations",
+            "Technical expertise needed"
+          ],
+          "typical_farm_size": "10-100 hectares",
+          "average_investment": "$3000-5000 per hectare"
+        }
+      },
+      "urban_farming_systems": {
+        "rooftop_farming": {
+          "regions": ["Global urban areas", "Dense cities"],
+          "characteristics": {
+            "description": "Agricultural systems on building rooftops",
+            "types": [
+              "Container gardens",
+              "Hydroponic systems",
+              "Green roofs",
+              "Greenhouse systems"
+            ],
+            "mechanization_level": "Variable",
+            "sustainability_score": 8,
+            "water_dependency": "Low to Moderate"
+          },
+          "advantages": [
+            "Urban space utilization",
+            "Building insulation",
+            "Short supply chains",
+            "Community engagement"
+          ],
+          "disadvantages": [
+            "Weight limitations",
+            "Limited scale",
+            "Building modifications needed"
+          ],
+          "typical_farm_size": "100-1000 square meters",
+          "average_investment": "$100-300 per square meter"
+        },
+        "indoor_microfarming": {
+          "regions": ["Global urban areas", "Food deserts"],
+          "characteristics": {
+            "description": "Small-scale indoor farming in urban spaces",
+            "technologies_used": [
+              "LED growing systems",
+              "Vertical racks",
+              "Automation",
+              "Climate control"
+            ],
+            "mechanization_level": "High",
+            "sustainability_score": 7,
+            "water_dependency": "Very Low"
+          },
+          "advantages": [
+            "Space efficiency",
+            "Year-round production",
+            "Controlled environment",
+            "Urban integration"
+          ],
+          "disadvantages": [
+            "High energy costs",
+            "Limited crop variety",
+            "Technical knowledge needed"
+          ],
+          "typical_farm_size": "50-500 square meters",
+          "average_investment": "$500-1000 per square meter"
+        }
+      },
+      "aquatic_farming": {
+        "deep_sea_farming": {
+          "regions": ["Coastal nations", "Ocean territories"],
+          "characteristics": {
+            "description": "Offshore aquaculture and seaweed cultivation",
+            "products": [
+              "Fish",
+              "Shellfish",
+              "Seaweed",
+              "Marine plants"
+            ],
+            "mechanization_level": "High",
+            "sustainability_score": 8,
+            "depth_range": "25-100 meters"
+          },
+          "advantages": [
+            "Large production potential",
+            "Clean water access",
+            "Reduced land use",
+            "Ocean restoration potential"
+          ],
+          "disadvantages": [
+            "Weather vulnerability",
+            "Access challenges",
+            "High infrastructure costs"
+          ],
+          "typical_farm_size": "5-50 hectares",
+          "average_investment": "$1-5 million per hectare"
+        },
+        "integrated_multi_trophic_aquaculture": {
+          "regions": ["Coastal areas", "Lakes", "Large water bodies"],
+          "characteristics": {
+            "description": "Multi-species aquaculture system mimicking natural ecosystems",
+            "components": [
+              "Fish farming",
+              "Shellfish cultivation",
+              "Seaweed growth",
+              "Nutrient recycling"
+            ],
+            "mechanization_level": "Moderate to High",
+            "sustainability_score": 9,
+            "water_efficiency": "Very High"
+          },
+          "advantages": [
+            "Waste reduction",
+            "Multiple products",
+            "Ecosystem services",
+            "Better water quality"
+          ],
+          "disadvantages": [
+            "Complex management",
+            "Species balance needed",
+            "Site selection critical"
+          ],
+          "typical_farm_size": "2-20 hectares",
+          "average_investment": "$500,000-2,000,000 per hectare"
+        }
+      },
+      "alternative_protein_production": {
+        "insect_farming": {
+          "regions": ["Global", "Southeast Asia", "Europe"],
+          "characteristics": {
+            "description": "Commercial production of insects for food and feed",
+            "species": [
+              "Black soldier fly",
+              "Crickets",
+              "Mealworms",
+              "Grasshoppers"
+            ],
+            "mechanization_level": "Moderate to High",
+            "sustainability_score": 9,
+            "feed_conversion_ratio": "Very High"
+          },
+          "advantages": [
+            "High protein efficiency",
+            "Low environmental impact",
+            "Waste conversion potential",
+            "Small space requirement"
+          ],
+          "disadvantages": [
+            "Consumer acceptance",
+            "Regulatory challenges",
+            "Scale-up difficulties"
+          ],
+          "typical_farm_size": "500-5000 square meters",
+          "average_investment": "$200-500 per square meter"
+        },
+        "microbial_protein_production": {
+          "regions": ["Developed nations", "Research centers"],
+          "characteristics": {
+            "description": "Protein production through fermentation of microorganisms",
+            "technologies_used": [
+              "Bioreactors",
+              "Fermentation systems",
+              "Protein extraction",
+              "Quality control"
+            ],
+            "mechanization_level": "Very High",
+            "sustainability_score": 8,
+            "water_efficiency": "High"
+          },
+          "advantages": [
+            "Land use efficiency",
+            "Consistent quality",
+            "Scalable production",
+            "Weather independent"
+          ],
+          "disadvantages": [
+            "High technology requirements",
+            "Energy intensive",
+            "Market development needed"
+          ],
+          "typical_facility_size": "1000-10000 square meters",
+          "average_investment": "$10-50 million per facility"
+        }
+      }
+    }

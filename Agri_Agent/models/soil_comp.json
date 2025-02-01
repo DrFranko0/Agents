@@ -1,0 +1,433 @@
+{
+    "soil_types": {
+      "loamy": {
+        "characteristics": {
+          "texture": "Mixed (sand, silt, clay)",
+          "drainage": "Good",
+          "water_retention": "Excellent",
+          "nutrient_content": "High",
+          "pH_range": "6.0-7.0",
+          "organic_matter": "High"
+        },
+        "suitable_crops": {
+          "vegetables": [
+            {
+              "name": "Tomatoes",
+              "optimal_temperature": "20-27°C",
+              "growing_season": "90-150 days",
+              "water_needs": "Medium-High",
+              "spacing": "45-60 cm",
+              "sunlight": "Full sun"
+            },
+            {
+              "name": "Peppers",
+              "optimal_temperature": "20-30°C",
+              "growing_season": "60-95 days",
+              "water_needs": "Medium",
+              "spacing": "30-45 cm",
+              "sunlight": "Full sun"
+            },
+            {
+              "name": "Cabbage",
+              "optimal_temperature": "15-24°C",
+              "growing_season": "70-120 days",
+              "water_needs": "Medium",
+              "spacing": "30-45 cm",
+              "sunlight": "Full sun"
+            }
+          ],
+          "grains": [
+            {
+              "name": "Corn",
+              "optimal_temperature": "20-30°C",
+              "growing_season": "60-100 days",
+              "water_needs": "High",
+              "spacing": "75-90 cm",
+              "sunlight": "Full sun"
+            },
+            {
+              "name": "Wheat",
+              "optimal_temperature": "15-25°C",
+              "growing_season": "100-130 days",
+              "water_needs": "Medium",
+              "spacing": "15-20 cm",
+              "sunlight": "Full sun"
+            }
+          ],
+          "fruits": [
+            {
+              "name": "Strawberries",
+              "optimal_temperature": "20-25°C",
+              "growing_season": "Perennial",
+              "water_needs": "Medium",
+              "spacing": "30-45 cm",
+              "sunlight": "Full sun"
+            }
+          ]
+        }
+      },
+      "clay": {
+        "characteristics": {
+          "texture": "Fine, dense",
+          "drainage": "Poor",
+          "water_retention": "Very High",
+          "nutrient_content": "High",
+          "pH_range": "5.5-7.0",
+          "organic_matter": "Medium"
+        },
+        "suitable_crops": {
+          "vegetables": [
+            {
+              "name": "Broccoli",
+              "optimal_temperature": "18-23°C",
+              "growing_season": "85-100 days",
+              "water_needs": "Medium",
+              "spacing": "45-60 cm",
+              "sunlight": "Full sun"
+            },
+            {
+              "name": "Brussels Sprouts",
+              "optimal_temperature": "15-20°C",
+              "growing_season": "90-180 days",
+              "water_needs": "Medium",
+              "spacing": "45-60 cm",
+              "sunlight": "Full sun"
+            }
+          ],
+          "grains": [
+            {
+              "name": "Rice",
+              "optimal_temperature": "21-37°C",
+              "growing_season": "120-150 days",
+              "water_needs": "Very High",
+              "spacing": "15-20 cm",
+              "sunlight": "Full sun"
+            }
+          ],
+          "legumes": [
+            {
+              "name": "Lentils",
+              "optimal_temperature": "15-25°C",
+              "growing_season": "80-110 days",
+              "water_needs": "Low-Medium",
+              "spacing": "10-15 cm",
+              "sunlight": "Full sun"
+            }
+          ]
+        }
+      },
+      "sandy": {
+        "characteristics": {
+          "texture": "Coarse",
+          "drainage": "Excellent",
+          "water_retention": "Poor",
+          "nutrient_content": "Low",
+          "pH_range": "5.5-7.0",
+          "organic_matter": "Low"
+        },
+        "suitable_crops": {
+          "root_vegetables": [
+            {
+              "name": "Carrots",
+              "optimal_temperature": "15-25°C",
+              "growing_season": "70-80 days",
+              "water_needs": "Medium",
+              "spacing": "5-8 cm",
+              "sunlight": "Full sun"
+            },
+            {
+              "name": "Potatoes",
+              "optimal_temperature": "15-23°C",
+              "growing_season": "90-120 days",
+              "water_needs": "Medium",
+              "spacing": "30-40 cm",
+              "sunlight": "Full sun"
+            }
+          ],
+          "legumes": [
+            {
+              "name": "Peanuts",
+              "optimal_temperature": "20-30°C",
+              "growing_season": "120-150 days",
+              "water_needs": "Medium",
+              "spacing": "30-45 cm",
+              "sunlight": "Full sun"
+            }
+          ]
+        }
+      },
+      "silt": {
+        "characteristics": {
+          "texture": "Fine",
+          "drainage": "Moderate",
+          "water_retention": "Good",
+          "nutrient_content": "Medium",
+          "pH_range": "6.0-7.0",
+          "organic_matter": "Medium"
+        },
+        "suitable_crops": {
+          "vegetables": [
+            {
+              "name": "Lettuce",
+              "optimal_temperature": "15-22°C",
+              "growing_season": "30-60 days",
+              "water_needs": "Medium",
+              "spacing": "20-30 cm",
+              "sunlight": "Partial to full sun"
+            },
+            {
+              "name": "Spinach",
+              "optimal_temperature": "15-20°C",
+              "growing_season": "40-50 days",
+              "water_needs": "Medium",
+              "spacing": "15-20 cm",
+              "sunlight": "Full sun to partial shade"
+            }
+          ],
+          "berries": [
+            {
+              "name": "Raspberries",
+              "optimal_temperature": "20-25°C",
+              "growing_season": "Perennial",
+              "water_needs": "Medium",
+              "spacing": "60-90 cm",
+              "sunlight": "Full sun"
+            }
+          ]
+        }
+      }
+    },
+    "climate_zones": {
+      "tropical": {
+        "characteristics": {
+          "temperature_range": "20-35°C",
+          "annual_rainfall": "1500-2000mm",
+          "growing_season": "Year-round",
+          "humidity": "High",
+          "frost_risk": "None"
+        },
+        "suitable_crops": {
+          "fruits": [
+            {
+              "name": "Bananas",
+              "growing_requirements": {
+                "soil_type": "Well-drained loam",
+                "pH_range": "5.5-6.5",
+                "water_needs": "High",
+                "sunlight": "Full sun",
+                "spacing": "3-4 meters"
+              },
+              "growing_season": "9-12 months",
+              "varieties": ["Cavendish", "Lady Finger", "Red Dacca"]
+            },
+            {
+              "name": "Mangoes",
+              "growing_requirements": {
+                "soil_type": "Deep loamy",
+                "pH_range": "5.5-7.5",
+                "water_needs": "Medium",
+                "sunlight": "Full sun",
+                "spacing": "8-10 meters"
+              },
+              "growing_season": "Perennial",
+              "varieties": ["Alphonso", "Kent", "Tommy Atkins"]
+            }
+          ],
+          "spices": [
+            {
+              "name": "Black Pepper",
+              "growing_requirements": {
+                "soil_type": "Rich loamy",
+                "pH_range": "5.5-6.5",
+                "water_needs": "High",
+                "sunlight": "Partial shade",
+                "spacing": "2-3 meters"
+              },
+              "growing_season": "2-4 years",
+              "varieties": ["Malabar", "Tellicherry"]
+            }
+          ]
+        }
+      },
+      "mediterranean": {
+        "characteristics": {
+          "temperature_range": "15-30°C",
+          "annual_rainfall": "400-800mm",
+          "growing_season": "Spring-Fall",
+          "humidity": "Moderate",
+          "frost_risk": "Low"
+        },
+        "suitable_crops": {
+          "fruits": [
+            {
+              "name": "Olives",
+              "growing_requirements": {
+                "soil_type": "Well-drained rocky",
+                "pH_range": "6.0-8.0",
+                "water_needs": "Low",
+                "sunlight": "Full sun",
+                "spacing": "6-8 meters"
+              },
+              "growing_season": "Perennial",
+              "varieties": ["Kalamata", "Manzanilla", "Mission"]
+            },
+            {
+              "name": "Grapes",
+              "growing_requirements": {
+                "soil_type": "Well-drained loamy",
+                "pH_range": "6.0-7.0",
+                "water_needs": "Low-Medium",
+                "sunlight": "Full sun",
+                "spacing": "1.8-2.4 meters"
+              },
+              "growing_season": "Perennial",
+              "varieties": ["Cabernet Sauvignon", "Merlot", "Chardonnay"]
+            }
+          ],
+          "herbs": [
+            {
+              "name": "Rosemary",
+              "growing_requirements": {
+                "soil_type": "Sandy loam",
+                "pH_range": "6.0-7.0",
+                "water_needs": "Low",
+                "sunlight": "Full sun",
+                "spacing": "60-90 cm"
+              },
+              "growing_season": "Perennial",
+              "varieties": ["Tuscan Blue", "Arp", "Salem"]
+            }
+          ]
+        }
+      },
+      "temperate": {
+        "characteristics": {
+          "temperature_range": "10-25°C",
+          "annual_rainfall": "700-1500mm",
+          "growing_season": "Spring-Fall",
+          "humidity": "Moderate",
+          "frost_risk": "Moderate"
+        },
+        "suitable_crops": {
+          "fruits": [
+            {
+              "name": "Apples",
+              "growing_requirements": {
+                "soil_type": "Well-drained loamy",
+                "pH_range": "6.0-7.0",
+                "water_needs": "Medium",
+                "sunlight": "Full sun",
+                "spacing": "4-6 meters"
+              },
+              "growing_season": "Perennial",
+              "varieties": ["Honeycrisp", "Fuji", "Gala"]
+            }
+          ],
+          "vegetables": [
+            {
+              "name": "Peas",
+              "growing_requirements": {
+                "soil_type": "Well-drained loamy",
+                "pH_range": "6.0-7.0",
+                "water_needs": "Medium",
+                "sunlight": "Full sun",
+                "spacing": "5-8 cm"
+              },
+              "growing_season": "60-70 days",
+              "varieties": ["Sugar Snap", "Snow Peas", "English Peas"]
+            }
+          ]
+        }
+      },
+      "arid": {
+        "characteristics": {
+          "temperature_range": "25-45°C",
+          "annual_rainfall": "<250mm",
+          "growing_season": "Limited by water",
+          "humidity": "Very low",
+          "frost_risk": "Low"
+        },
+        "suitable_crops": {
+          "fruits": [
+            {
+              "name": "Dates",
+              "growing_requirements": {
+                "soil_type": "Sandy loam",
+                "pH_range": "7.0-8.0",
+                "water_needs": "High",
+                "sunlight": "Full sun",
+                "spacing": "8-12 meters"
+              },
+              "growing_season": "Perennial",
+              "varieties": ["Medjool", "Deglet Noor", "Barhi"]
+            }
+          ],
+          "grains": [
+            {
+              "name": "Sorghum",
+              "growing_requirements": {
+                "soil_type": "Various",
+                "pH_range": "6.0-7.0",
+                "water_needs": "Low",
+                "sunlight": "Full sun",
+                "spacing": "10-15 cm"
+              },
+              "growing_season": "90-120 days",
+              "varieties": ["Milo", "Sudan grass", "Sweet sorghum"]
+            }
+          ]
+        }
+      },
+      "cold": {
+        "characteristics": {
+          "temperature_range": "-5-15°C",
+          "annual_rainfall": "300-900mm",
+          "growing_season": "Short summer",
+          "humidity": "Low to moderate",
+          "frost_risk": "High"
+        },
+        "suitable_crops": {
+          "vegetables": [
+            {
+              "name": "Kale",
+              "growing_requirements": {
+                "soil_type": "Rich loamy",
+                "pH_range": "6.0-7.0",
+                "water_needs": "Medium",
+                "sunlight": "Full sun",
+                "spacing": "45-60 cm"
+              },
+              "growing_season": "55-75 days",
+              "varieties": ["Lacinato", "Red Russian", "Curly"]
+            },
+            {
+              "name": "Turnips",
+              "growing_requirements": {
+                "soil_type": "Well-drained loamy",
+                "pH_range": "6.0-7.5",
+                "water_needs": "Medium",
+                "sunlight": "Full sun",
+                "spacing": "10-15 cm"
+              },
+              "growing_season": "40-55 days",
+              "varieties": ["Purple Top", "Tokyo Cross", "Golden Ball"]
+            }
+          ],
+          "berries": [
+            {
+              "name": "Lingonberries",
+              "growing_requirements": {
+                "soil_type": "Acidic, well-drained",
+                "pH_range": "4.5-5.5",
+                "water_needs": "Medium",
+                "sunlight": "Partial to full sun",
+                "spacing": "30-45 cm"
+              },
+              "growing_season": "Perennial",
+              "varieties": ["Red Pearl", "Koralle", "Sussi"]
+            }
+          ]
+        }
+      }
+    }
+  }

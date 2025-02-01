@@ -7,6 +7,13 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 
+import os
+
+if "PORT" in os.environ:
+    os.environ["STREAMLIT_SERVER_PORT"] = os.environ["PORT"]
+    os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
+
+
 llm = OllamaLLM(model="llama3.1")
 
 prompt_template = PromptTemplate(

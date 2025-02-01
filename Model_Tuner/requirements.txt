@@ -1,0 +1,7 @@
+streamlit
+langchain-ollama
+langchain
+huggingface-hub
+requests
+beautifulsoup4
+pandas

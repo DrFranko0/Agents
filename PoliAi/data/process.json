@@ -1,0 +1,14 @@
+{
+    "aadhaar": [
+        "Visit the nearest Aadhaar enrollment center.",
+        "Carry required documents like Proof of Identity and Address.",
+        "Complete biometric data capture.",
+        "Receive an acknowledgment slip and track your status online."
+    ],
+    "pan": [
+        "Visit the NSDL or UTIITSL website.",
+        "Fill the application form online.",
+        "Upload required documents and make the payment.",
+        "Receive your PAN card at the registered address."
+    ]
+}
