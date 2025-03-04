@@ -1,173 +1,156 @@
 from __future__ import annotations as _annotations
 
-from dataclasses import dataclass
-from dotenv import load_dotenv
-import logfire
-import asyncio
 import os
-from typing import List, Any
+import sys
+import json
+import asyncio
+from dataclasses import dataclass
+from typing import Dict, Any, List, Optional, Annotated, TypedDict
 
-from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.gemini import GeminiModel  # Importing Pydantic AI's GeminiModel for chat
-
-import chromadb
-
-# Load environment variables from .env file
+from dotenv import load_dotenv
 load_dotenv()
 
-# Initialize ChromaDB persistent client and get the "site_pages" collection
-chroma_client = chromadb.PersistentClient(path=r"C:\Users\frank\chroma_db")
-try:
-    collection = chroma_client.get_collection("site_pages")
-except Exception:
-    collection = chroma_client.create_collection("site_pages")
+def get_env_var(key: str, default: Optional[str] = None) -> str:
+    return os.getenv(key, default)
 
-@dataclass
-class FASTAPIDeps:
-    chroma_collection: Any
+from pydantic_ai import Agent, RunContext
+from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter
+from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import interrupt
 
-# Instantiate Pydantic AI's GeminiModel for chat functionality using the provided LLM_MODEL
-llm_model_name = os.getenv('LLM_MODEL', 'gemini-2.0-flash')
-model = GeminiModel(model_name=llm_model_name)
+from supabase import Client
 
-logfire.configure(send_to_logfire='if-token-present')
+from rag import framer_motion_coder, FramerMotionDeps
 
-async def get_embedding(text: str) -> List[float]:
-    """
-    Get an embedding for the text using Google's Gemini API embed_content method.
-    This uses the 'text-embedding-004' model.
-    """
-    from google import genai
-    # Optionally, you can import types: from google.genai import types
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-    result = await asyncio.to_thread(
-        client.models.embed_content,
-        model="text-embedding-004",
-        contents=text
-    )
-    return result.embeddings
+base_url = 'http://localhost:11411/v1'
+primary_llm_model_name = 'llama3.1'
+reasoner_llm_model_name = 'llama3.1'
 
-# Create the Pydantic AI agent with the Gemini model (for chat) and updated dependencies
-fastapi_expert = Agent(
-    model=model,
-    system_prompt="""
-You are an expert at Pydantic AI - a Python AI agent framework that you have access to all the documentation,
-including examples, an API reference, and other resources to help you build Pydantic AI agents.
+is_ollama = "localhost" in base_url.lower()
 
-Your only job is to assist with this and you don't answer other questions besides describing what you are able to do.
+reasoner_llm_model = OpenAIModel(reasoner_llm_model_name, base_url=base_url, api_key=api_key)
+primary_llm_model = OpenAIModel(primary_llm_model_name, base_url=base_url, api_key=api_key)
 
-Don't ask the user before taking an action, just do it. Always make sure you look at the documentation with the provided tools before answering the user's question unless you have already.
-
-When you first look at the documentation, always start with RAG.
-Then also always check the list of available documentation pages and retrieve the content of page(s) if it'll help.
-
-Always let the user know when you didn't find the answer in the documentation or the right URL - be honest.
-""",
-    deps_type=FASTAPIDeps,
-    retries=2
+reasoner = Agent(
+    reasoner_llm_model,
+    system_prompt='You are an expert at coding Applications and providing code with FramerMotion and defining scope.'
 )
 
-@fastapi_expert.tool
-async def retrieve_relevant_documentation(ctx: RunContext[FASTAPIDeps], user_query: str) -> str:
-    """
-    Retrieve relevant documentation chunks based on the query using RAG.
-    
-    Args:
-        ctx: The context including the ChromaDB collection.
-        user_query: The user's question or query.
-        
-    Returns:
-        A formatted string containing the top 5 most relevant documentation chunks.
-    """
-    try:
-        # Get the embedding for the query using Google's Gemini API embed_content method
-        query_embedding = await get_embedding(user_query)
-        
-        # Query ChromaDB for relevant documents
-        result = await asyncio.to_thread(
-            ctx.deps.chroma_collection.query,
-            query_embeddings=[query_embedding],
-            n_results=5,
-            where={"source": "fastapi_docs"}
-        )
-        
-        if not result or not result.get("documents", []) or not result["documents"][0]:
-            return "No relevant documentation found."
-            
-        # Format the results (ChromaDB returns lists of lists)
-        formatted_chunks = []
-        for doc, meta in zip(result["documents"][0], result["metadatas"][0]):
-            chunk_text = f"""
-# {meta.get('title', 'No Title')}
+router_agent = Agent(
+    primary_llm_model,
+    system_prompt='Your job is to route the user message either to the end of the conversation or to continue coding.'
+)
 
-{doc}
-"""
-            formatted_chunks.append(chunk_text.strip())
-            
-        return "\n\n---\n\n".join(formatted_chunks)
-        
-    except Exception as e:
-        print(f"Error retrieving documentation: {e}")
-        return f"Error retrieving documentation: {str(e)}"
+end_conversation_agent = Agent(
+    primary_llm_model,
+    system_prompt='Your job is to end the conversation by giving final instructions for executing the agent.'
+)
 
-@fastapi_expert.tool
-async def list_documentation_pages(ctx: RunContext[FASTAPIDeps]) -> List[str]:
-    """
-    Retrieve a list of all available FastAPI documentation pages.
-    
-    Returns:
-        List[str]: Unique URLs for all documentation pages.
-    """
+if get_env_var("SUPABASE_URL"):
+    supabase: Client = Client(
+        get_env_var("SUPABASE_URL"),
+        get_env_var("SUPABASE_SERVICE_KEY")
+    )
+else:
+    supabase = None
+
+class AgentState(TypedDict):
+    latest_user_message: str
+    messages: Annotated[List[bytes], lambda x, y: x + y]
+    scope: str
+
+async def define_scope_with_reasoner(state: AgentState):
     try:
-        docs = await asyncio.to_thread(
-            ctx.deps.chroma_collection.get,
-            where={"source": "fastapi_docs"}
-        )
-        
-        if not docs or not docs.get("metadatas"):
-            return []
-            
-        # Extract unique URLs from metadata
-        urls = sorted(set(meta.get('url', '') for meta in docs["metadatas"] if meta.get('url')))
-        return urls
-        
+        result = supabase.from_('site_pages') \
+            .select('url') \
+            .eq('metadata->>source', 'framer_motion_docs') \
+            .execute()
+        documentation_pages = sorted(set(doc['url'] for doc in result.data)) if result.data else []
     except Exception as e:
         print(f"Error retrieving documentation pages: {e}")
-        return []
-
-@fastapi_expert.tool
-async def get_page_content(ctx: RunContext[FASTAPIDeps], url: str) -> str:
-    """
-    Retrieve the full content of a specific documentation page by combining its chunks.
+        documentation_pages = []
     
-    Args:
-        ctx: The context including the ChromaDB collection.
-        url: The URL of the page to retrieve.
-        
-    Returns:
-        The complete page content with all chunks combined in order.
-    """
-    try:
-        docs = await asyncio.to_thread(
-            ctx.deps.chroma_collection.get,
-            where={"url": url, "source": "fastapi_docs"}
-        )
-        
-        if not docs or not docs.get("documents"):
-            return f"No content found for URL: {url}"
-            
-        # Pair metadata and document text, then sort by chunk_number
-        paired = list(zip(docs["metadatas"], docs["documents"]))
-        paired.sort(key=lambda x: x[0].get("chunk_number", 0))
-        
-        page_title = paired[0][0].get("title", "Untitled").split(" - ")[0]
-        formatted_content = [f"# {page_title}\n"]
-        
-        for meta, doc in paired:
-            formatted_content.append(doc)
-            
-        return "\n\n".join(formatted_content)
-        
-    except Exception as e:
-        print(f"Error retrieving page content: {e}")
-        return f"Error retrieving page content: {str(e)}"
+    documentation_pages_str = "\n".join(documentation_pages)
+
+    prompt = f"""
+User AI Agent Request: {state['latest_user_message']}
+
+Provide proper applications or code.
+
+The user specifically wants to use the Framer Motion docs.
+Available docs:
+{documentation_pages_str}
+"""
+    result = await reasoner.run(prompt)
+    scope = result.data
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    scope_path = os.path.join(parent_dir, "workbench", "scope.md")
+    os.makedirs(os.path.join(parent_dir, "workbench"), exist_ok=True)
+    with open(scope_path, "w", encoding="utf-8") as f:
+        f.write(scope)
+    
+    return {"scope": scope}
+
+async def coder_agent(state: AgentState, writer):
+    deps = FramerMotionDeps(
+        supabase=supabase,
+        reasoner_output=state['scope']
+    )
+    message_history: List[ModelMessage] = []
+    for message_row in state['messages']:
+        message_history.extend(ModelMessagesTypeAdapter.validate_json(message_row))
+
+    result = await framer_motion_coder.run(state['latest_user_message'], deps=deps, message_history=message_history)
+    writer(result.data)
+
+    return {"messages": [result.new_messages_json()]}
+
+def get_next_user_message(state: AgentState):
+    value = interrupt({})
+    return {"latest_user_message": value}
+
+async def route_user_message(state: AgentState):
+    prompt = f"""
+The user said: {state['latest_user_message']}
+
+If the user wants to end the conversation, respond "finish_conversation".
+Otherwise, respond "coder_agent".
+"""
+    result = await router_agent.run(prompt)
+    next_action = result.data.strip()
+    if next_action == "finish_conversation":
+        return "finish_conversation"
+    else:
+        return "coder_agent"
+
+async def finish_conversation(state: AgentState, writer):
+    message_history: List[ModelMessage] = []
+    for message_row in state['messages']:
+        message_history.extend(ModelMessagesTypeAdapter.validate_json(message_row))
+
+    result = await end_conversation_agent.run(state['latest_user_message'], message_history=message_history)
+    writer(result.data)
+    return {"messages": [result.new_messages_json()]}
+
+builder = StateGraph(AgentState)
+builder.add_node("define_scope_with_reasoner", define_scope_with_reasoner)
+builder.add_node("coder_agent", coder_agent)
+builder.add_node("get_next_user_message", get_next_user_message)
+builder.add_node("finish_conversation", finish_conversation)
+
+builder.add_edge(START, "define_scope_with_reasoner")
+builder.add_edge("define_scope_with_reasoner", "coder_agent")
+builder.add_edge("coder_agent", "get_next_user_message")
+builder.add_conditional_edges(
+    "get_next_user_message",
+    route_user_message,
+    {"coder_agent": "coder_agent", "finish_conversation": "finish_conversation"}
+)
+builder.add_edge("finish_conversation", END)
+
+memory = MemorySaver()
+agentic_flow = builder.compile(checkpointer=memory)
