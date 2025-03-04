@@ -1,33 +1,42 @@
 import os
 import sys
-import json
 import asyncio
+import threading
+import subprocess
 import requests
+import json
+from typing import List, Dict, Any, Optional, Callable
 from xml.etree import ElementTree
-from typing import List, Dict, Any
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 from dotenv import load_dotenv
+import re
+import html2text
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.utils import get_env_var
 
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from supabase import create_client, Client
 
-import ollama  # Use Ollama for LLM tasks
-import chromadb  # Use ChromaDB for vector storage
-
-# Load environment variables from .env file
 load_dotenv()
-# Ensure your .env file includes:
-# OLLAMA_CHAT_MODEL=mistral
-# OLLAMA_EMBED_MODEL=all-minilm
 
+# Retain base_url for other services if needed; the openai API is no longer used.
+base_url = get_env_var('BASE_URL') or 'https://api.openai.com/v1'
+# Use an open-source embedding model from SentenceTransformers
+embedding_model = 'all-MiniLM-L6-v2'
 
-# Use PersistentClient to store data on disk.
-chroma_client = chromadb.PersistentClient(path=r"C:\Users\frank\chroma_db")
-try:
-    collection = chroma_client.get_collection("site_pages")
-except Exception:
-    collection = chroma_client.create_collection("site_pages")
+supabase: Client = create_client(
+    get_env_var("SUPABASE_URL"),
+    get_env_var("SUPABASE_SERVICE_KEY")
+)
+
+html_converter = html2text.HTML2Text()
+html_converter.ignore_links = False
+html_converter.ignore_images = False
+html_converter.ignore_tables = False
+html_converter.body_width = 0
 
 @dataclass
 class ProcessedChunk:
@@ -39,8 +48,67 @@ class ProcessedChunk:
     metadata: Dict[str, Any]
     embedding: List[float]
 
+class CrawlProgressTracker:    
+    def __init__(self, 
+                 progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None):
+        self.progress_callback = progress_callback
+        self.urls_found = 0
+        self.urls_processed = 0
+        self.urls_succeeded = 0
+        self.urls_failed = 0
+        self.chunks_stored = 0
+        self.logs = []
+        self.is_running = False
+        self.start_time = None
+        self.end_time = None
+    
+    def log(self, message: str):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_entry = f"[{timestamp}] {message}"
+        self.logs.append(log_entry)
+        print(message)
+        if self.progress_callback:
+            self.progress_callback(self.get_status())
+    
+    def start(self):
+        self.is_running = True
+        self.start_time = datetime.now()
+        self.log("Crawling process started")
+        if self.progress_callback:
+            self.progress_callback(self.get_status())
+    
+    def complete(self):
+        self.is_running = False
+        self.end_time = datetime.now()
+        duration = self.end_time - self.start_time if self.start_time else None
+        duration_str = str(duration).split('.')[0] if duration else "unknown"
+        self.log(f"Crawling process completed in {duration_str}")
+        if self.progress_callback:
+            self.progress_callback(self.get_status())
+    
+    def get_status(self) -> Dict[str, Any]:
+        return {
+            "is_running": self.is_running,
+            "urls_found": self.urls_found,
+            "urls_processed": self.urls_processed,
+            "urls_succeeded": self.urls_succeeded,
+            "urls_failed": self.urls_failed,
+            "chunks_stored": self.chunks_stored,
+            "progress_percentage": (self.urls_processed / self.urls_found * 100) if self.urls_found > 0 else 0,
+            "logs": self.logs,
+            "start_time": self.start_time,
+            "end_time": self.end_time
+        }
+    
+    @property
+    def is_completed(self) -> bool:
+        return not self.is_running and self.end_time is not None
+    
+    @property
+    def is_successful(self) -> bool:
+        return self.is_completed and self.urls_failed == 0 and self.urls_succeeded > 0
+
 def chunk_text(text: str, chunk_size: int = 5000) -> List[str]:
-    """Split text into chunks, respecting code blocks and paragraphs."""
     chunks = []
     start = 0
     text_length = len(text)
@@ -50,7 +118,6 @@ def chunk_text(text: str, chunk_size: int = 5000) -> List[str]:
         if end >= text_length:
             chunks.append(text[start:].strip())
             break
-
         chunk = text[start:end]
         code_block = chunk.rfind('```')
         if code_block != -1 and code_block > chunk_size * 0.3:
@@ -63,160 +130,197 @@ def chunk_text(text: str, chunk_size: int = 5000) -> List[str]:
             last_period = chunk.rfind('. ')
             if last_period > chunk_size * 0.3:
                 end = start + last_period + 1
-
         chunk = text[start:end].strip()
         if chunk:
             chunks.append(chunk)
-
         start = max(start + 1, end)
-
     return chunks
 
-async def get_title_and_summary(chunk: str, url: str) -> Dict[str, str]:
-    """Extract title and summary using Ollama's chat endpoint."""
-    chat_model = os.getenv("OLLAMA_CHAT_MODEL", "mistral")
-    system_prompt = (
-        "You are an AI that extracts titles and summaries from documentation chunks.\n"
-        "Return a JSON object with 'title' and 'summary' keys.\n"
-        "For the title: If this seems like the start of a document, extract its title. "
-        "If it's a middle chunk, derive a descriptive title.\n"
-        "For the summary: Create a concise summary of the main points in this chunk.\n"
-        "Keep both title and summary concise but informative."
-    )
+def sync_get_title_and_summary(chunk: str, url: str) -> Dict[str, str]:
+    title_match = re.search(r"^(?:#)+\s*(.+)", chunk, re.MULTILINE)
+    if title_match:
+        title = title_match.group(1).strip()
+    else:
+        title = chunk.split(".")[0].strip() if "." in chunk else chunk[:50].strip()
+    
     try:
-        response = ollama.chat(
-            model=chat_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"URL: {url}\n\nContent:\n{chunk[:1000]}..."}
-            ]
-        )
-        return json.loads(response["message"]["content"])
+        from transformers import pipeline
+        if not hasattr(sync_get_title_and_summary, "summarizer"):
+            sync_get_title_and_summary.summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+        summarizer = sync_get_title_and_summary.summarizer
+        
+        text_for_summary = chunk if len(chunk) < 1024 else chunk[:1024]
+        summary_output = summarizer(text_for_summary, max_length=130, min_length=30, do_sample=False)
+        summary = summary_output[0]['summary_text']
     except Exception as e:
-        print(f"Error getting title and summary: {e}")
-        return {"title": "Error processing title", "summary": "Error processing summary"}
+        print(f"Error in summarization: {e}")
+        summary = "Summary not available"
+    
+    return {"title": title, "summary": summary}
 
-async def get_embedding(text: str) -> List[float]:
-    """Get embedding vector from Ollama's embedding endpoint."""
-    embed_model = os.getenv("OLLAMA_EMBED_MODEL", "all-minilm")
+async def get_title_and_summary(chunk: str, url: str) -> Dict[str, str]:
+    return await asyncio.to_thread(sync_get_title_and_summary, chunk, url)
+
+def sync_get_embedding(text: str) -> List[float]:
     try:
-        response = ollama.embeddings(model=embed_model, prompt=text)
-        return response["embedding"]
+        from sentence_transformers import SentenceTransformer
+        if not hasattr(sync_get_embedding, "model"):
+            sync_get_embedding.model = SentenceTransformer(embedding_model)
+        model = sync_get_embedding.model
+        embedding = model.encode(text).tolist()
+        return embedding
     except Exception as e:
         print(f"Error getting embedding: {e}")
-        return [0] * 1536  # Return a zero vector on error
+        # Return a zero vector (384 dimensions for the MiniLM model) if embedding fails
+        return [0.0] * 384
+
+async def get_embedding(text: str) -> List[float]:
+    return await asyncio.to_thread(sync_get_embedding, text)
 
 async def process_chunk(chunk: str, chunk_number: int, url: str) -> ProcessedChunk:
-    """Process a single chunk of text."""
     extracted = await get_title_and_summary(chunk, url)
     embedding = await get_embedding(chunk)
-    
     metadata = {
-        "source": "pydantic_ai_docs",
+        "source": "framer_motion_docs",
         "chunk_size": len(chunk),
         "crawled_at": datetime.now(timezone.utc).isoformat(),
         "url_path": urlparse(url).path
     }
-    
     return ProcessedChunk(
         url=url,
         chunk_number=chunk_number,
-        title=extracted.get('title', ''),
-        summary=extracted.get('summary', ''),
+        title=extracted['title'],
+        summary=extracted['summary'],
         content=chunk,
         metadata=metadata,
         embedding=embedding
     )
 
 async def insert_chunk(chunk: ProcessedChunk):
-    """Insert a processed chunk into ChromaDB."""
-    # Create a unique ID using the URL and chunk number.
-    chunk_id = f"{chunk.url}-{chunk.chunk_number}"
-    # Merge additional metadata
-    metadata = {
-        "url": chunk.url,
-        "chunk_number": chunk.chunk_number,
-        "title": chunk.title,
-        "summary": chunk.summary,
-        **chunk.metadata
-    }
     try:
-        # Wrap the blocking call with asyncio.to_thread
-        await asyncio.to_thread(
-            collection.add,
-            ids=[chunk_id],
-            embeddings=[chunk.embedding],
-            documents=[chunk.content],
-            metadatas=[metadata]
-        )
+        data = {
+            "url": chunk.url,
+            "chunk_number": chunk.chunk_number,
+            "title": chunk.title,
+            "summary": chunk.summary,
+            "content": chunk.content,
+            "metadata": chunk.metadata,
+            "embedding": chunk.embedding
+        }
+        result = supabase.table("site_pages").insert(data).execute()
         print(f"Inserted chunk {chunk.chunk_number} for {chunk.url}")
+        return result
     except Exception as e:
-        print(f"Error inserting chunk into ChromaDB: {e}")
+        print(f"Error inserting chunk: {e}")
+        return None
 
-async def process_and_store_document(url: str, markdown: str):
-    """Process a document and store its chunks in parallel."""
+async def process_and_store_document(url: str, markdown: str, tracker: Optional[CrawlProgressTracker] = None):
     chunks = chunk_text(markdown)
+    
+    if tracker:
+        tracker.log(f"Split document into {len(chunks)} chunks for {url}")
+        if tracker.progress_callback:
+            tracker.progress_callback(tracker.get_status())
+    else:
+        print(f"Split document into {len(chunks)} chunks for {url}")
     
     tasks = [process_chunk(chunk, i, url) for i, chunk in enumerate(chunks)]
     processed_chunks = await asyncio.gather(*tasks)
     
+    if tracker:
+        tracker.log(f"Processed {len(processed_chunks)} chunks for {url}")
+        if tracker.progress_callback:
+            tracker.progress_callback(tracker.get_status())
+    else:
+        print(f"Processed {len(processed_chunks)} chunks for {url}")
+    
     insert_tasks = [insert_chunk(chunk) for chunk in processed_chunks]
     await asyncio.gather(*insert_tasks)
+    
+    if tracker:
+        tracker.chunks_stored += len(processed_chunks)
+        tracker.log(f"Stored {len(processed_chunks)} chunks for {url}")
+        if tracker.progress_callback:
+            tracker.progress_callback(tracker.get_status())
+    else:
+        print(f"Stored {len(processed_chunks)} chunks for {url}")
 
-async def crawl_parallel(urls: List[str], max_concurrent: int = 5):
-    """Crawl multiple URLs in parallel with a concurrency limit."""
-    browser_config = BrowserConfig(
-        headless=True,
-        verbose=False,
-        extra_args=["--disable-gpu", "--disable-dev-shm-usage", "--no-sandbox"],
-    )
-    crawl_config = CrawlerRunConfig(cache_mode=CacheMode.BYPASS)
+def fetch_url_content(url: str) -> str:
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        markdown = html_converter.handle(response.text)
+        markdown = re.sub(r'\n{3,}', '\n\n', markdown)
+        return markdown
+    except Exception as e:
+        raise Exception(f"Error fetching {url}: {str(e)}")
 
-    crawler = AsyncWebCrawler(config=browser_config)
-    await crawler.start()
-
+async def crawl_parallel_with_requests(urls: List[str], tracker: Optional[CrawlProgressTracker] = None, max_concurrent: int = 5):
     semaphore = asyncio.Semaphore(max_concurrent)
-
+    
     async def process_url(url: str):
         async with semaphore:
+            if tracker:
+                tracker.log(f"Crawling: {url}")
+                if tracker.progress_callback:
+                    tracker.progress_callback(tracker.get_status())
+            else:
+                print(f"Crawling: {url}")
             try:
-                result = await crawler.arun(
-                    url=url,
-                    config=crawl_config,
-                    session_id="session1"
-                )
-            except Exception as e:
-                if "EPIPE" in str(e):
-                    print(f"EPIPE error while crawling {url}: {e}. Skipping URL.")
-                    return
+                loop = asyncio.get_running_loop()
+                if tracker:
+                    tracker.log(f"Fetching content from: {url}")
                 else:
-                    print(f"Error crawling {url}: {e}")
-                    return
+                    print(f"Fetching content from: {url}")
+                markdown = await loop.run_in_executor(None, fetch_url_content, url)
+                
+                if markdown:
+                    if tracker:
+                        tracker.urls_succeeded += 1
+                        tracker.log(f"Successfully crawled: {url}")
+                        if tracker.progress_callback:
+                            tracker.progress_callback(tracker.get_status())
+                    else:
+                        print(f"Successfully crawled: {url}")
+                    await process_and_store_document(url, markdown, tracker)
+                else:
+                    if tracker:
+                        tracker.urls_failed += 1
+                        tracker.log(f"Failed: {url} - No content retrieved")
+                        if tracker.progress_callback:
+                            tracker.progress_callback(tracker.get_status())
+                    else:
+                        print(f"Failed: {url} - No content retrieved")
+            except Exception as e:
+                if tracker:
+                    tracker.urls_failed += 1
+                    tracker.log(f"Error processing {url}: {str(e)}")
+                    if tracker.progress_callback:
+                        tracker.progress_callback(tracker.get_status())
+                else:
+                    print(f"Error processing {url}: {str(e)}")
+            finally:
+                if tracker:
+                    tracker.urls_processed += 1
+                    if tracker.progress_callback:
+                        tracker.progress_callback(tracker.get_status())
+    
+    if tracker:
+        tracker.log(f"Processing {len(urls)} URLs with concurrency {max_concurrent}")
+        if tracker.progress_callback:
+            tracker.progress_callback(tracker.get_status())
+    else:
+        print(f"Processing {len(urls)} URLs with concurrency {max_concurrent}")
+    await asyncio.gather(*[process_url(url) for url in urls])
 
-            if result.success:
-                print(f"Successfully crawled: {url}")
-                await process_and_store_document(url, result.markdown_v2.raw_markdown)
-            else:
-                print(f"Failed: {url} - Error: {result.error_message}")
-
-    try:
-        await asyncio.gather(*[process_url(url) for url in urls])
-    finally:
-        try:
-            await crawler.close()
-        except Exception as e:
-            if "EPIPE" in str(e):
-                print("EPIPE error occurred during crawler shutdown, ignoring.")
-            else:
-                print("Error closing crawler:", e)
-
-def get_fastapi_docs_urls() -> List[str]:
-    """Get URLs from FastAPI docs sitemap."""
-    sitemap_url = "https://fastapi.tiangolo.com/sitemap.xml"
+def get_framer_motion_docs_urls() -> List[str]:
+    sitemap_url = "https://motion.dev/sitemap.xml"
     try:
         response = requests.get(sitemap_url)
         response.raise_for_status()
-        
         root = ElementTree.fromstring(response.content)
         namespace = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
         urls = [loc.text for loc in root.findall('.//ns:loc', namespace)]
@@ -225,14 +329,83 @@ def get_fastapi_docs_urls() -> List[str]:
         print(f"Error fetching sitemap: {e}")
         return []
 
-async def main():
-    urls = get_fastapi_docs_urls()
-    if not urls:
-        print("No URLs found to crawl")
-        return
-    
-    print(f"Found {len(urls)} URLs to crawl")
-    await crawl_parallel(urls)
+async def clear_existing_records():
+    try:
+        result = supabase.table("site_pages").delete().eq("metadata->>source", "framer_motion_docs").execute()
+        print("Cleared existing framer_motion_docs records from site_pages")
+        return result
+    except Exception as e:
+        print(f"Error clearing existing records: {e}")
+        return None
 
-if __name__ == "__main__":
-    asyncio.run(main())
+async def main_with_requests(tracker: Optional[CrawlProgressTracker] = None):
+    try:
+        if tracker:
+            tracker.start()
+        else:
+            print("Starting crawling process...")
+        
+        if tracker:
+            tracker.log("Clearing existing Framer Motion docs records...")
+        else:
+            print("Clearing existing Framer Motion docs records...")
+        await clear_existing_records()
+        
+        if tracker:
+            tracker.log("Existing records cleared")
+        else:
+            print("Existing records cleared")
+        
+        if tracker:
+            tracker.log("Fetching URLs from Framer Motion sitemap...")
+        else:
+            print("Fetching URLs from Framer Motion sitemap...")
+        urls = get_framer_motion_docs_urls()
+        
+        if not urls:
+            if tracker:
+                tracker.log("No URLs found to crawl")
+                tracker.complete()
+            else:
+                print("No URLs found to crawl")
+            return
+        
+        if tracker:
+            tracker.urls_found = len(urls)
+            tracker.log(f"Found {len(urls)} URLs to crawl")
+        else:
+            print(f"Found {len(urls)} URLs to crawl")
+        
+        await crawl_parallel_with_requests(urls, tracker)
+        
+        if tracker:
+            tracker.complete()
+        else:
+            print("Crawling process completed")
+            
+    except Exception as e:
+        if tracker:
+            tracker.log(f"Error in crawling process: {str(e)}")
+            tracker.complete()
+        else:
+            print(f"Error in crawling process: {str(e)}")
+
+def start_crawl_with_requests(progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None) -> CrawlProgressTracker:
+    tracker = CrawlProgressTracker(progress_callback)
+    
+    def run_crawl():
+        try:
+            asyncio.run(main_with_requests(tracker))
+        except Exception as e:
+            print(f"Error in crawl thread: {e}")
+            tracker.log(f"Thread error: {str(e)}")
+            tracker.complete()
+    thread = threading.Thread(target=run_crawl)
+    thread.daemon = True
+    thread.start()
+    return tracker
+
+if __name__ == "__main__":    
+    print("Starting crawler...")
+    asyncio.run(main_with_requests())
+    print("Crawler finished.")
