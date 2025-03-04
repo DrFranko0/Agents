@@ -109,10 +109,8 @@ def plan_travel(query):
 
 # Example usage
 travel_query = """
-Plan a 7-day trip to Goa for a couple interested in culture and food. 
-Budget is 30000 excluding flights. Include must-visit locations, 
-recommended activities, and a day-by-day itinerary. Also, provide a 
-breakdown of estimated costs.
+Plan a 8 day iternary from Bhubaneswar to Darjeeling and then to Gangtok including travel expenses with beautiful places and
+hotels with most days in Gangtok.Find low budget air travel from Bhubaneswar to Darjeeling and then by rented 4 wheelers 
 """
 
 result = plan_travel(travel_query)
